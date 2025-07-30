@@ -1,12 +1,15 @@
 from fastapi import Depends, FastAPI, HTTPException
 from sqlalchemy.orm import Session
 from fastapi.middleware.cors import CORSMiddleware
-
+from typing import Annotated
 from .models import models, schemas
 from .controllers import orders
-from .dependencies.database import engine, get_db
+from .dependencies.database import Base, engine, get_db
+from .models.models import Order, OrderDetail
 
-models.Base.metadata.create_all(bind=engine)
+Base.metadata.create_all(bind=engine)
+db_dependency = Annotated[Session, Depends(get_db)]
+
 
 app = FastAPI()
 
@@ -53,3 +56,5 @@ def delete_one_order(order_id: int, db: Session = Depends(get_db)):
     if order is None:
         raise HTTPException(status_code=404, detail="User not found")
     return orders.delete(db=db, order_id=order_id)
+
+
